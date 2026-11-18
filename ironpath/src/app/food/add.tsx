@@ -120,7 +120,7 @@ function PhotoFlow() {
         <T bold>Add your Anthropic API key to use photo logging</T>
         <T small muted>
           Photo logging uses Claude’s vision to estimate the meal. You need your own API key from console.anthropic.com
-          (each photo costs roughly a cent or two). It’s stored only in your iPhone’s Keychain.
+          (each photo costs roughly a cent or two). It stays on your phone and is only sent to Anthropic.
         </T>
         <Button title="Open Settings" onPress={() => router.push('/settings')} />
         <T small muted>
@@ -145,7 +145,13 @@ function PhotoFlow() {
       )}
       <Row>
         {Platform.OS !== 'web' ? <Button title="Camera" icon="camera" onPress={() => pick(true)} style={{ flex: 1 }} /> : null}
-        <Button title="Library" icon="image" kind="secondary" onPress={() => pick(false)} style={{ flex: 1 }} />
+        <Button
+          title={Platform.OS === 'web' ? 'Take or choose photo' : 'Library'}
+          icon={Platform.OS === 'web' ? 'camera' : 'image'}
+          kind={Platform.OS === 'web' ? 'primary' : 'secondary'}
+          onPress={() => pick(false)}
+          style={{ flex: 1 }}
+        />
       </Row>
       {photo && !result ? (
         <>

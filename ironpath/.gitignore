@@ -23,3 +23,5 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+
+# website build output (published copy lives in ../docs)

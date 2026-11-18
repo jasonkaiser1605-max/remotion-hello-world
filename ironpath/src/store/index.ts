@@ -51,6 +51,8 @@ export interface AppState {
   moveSession: (id: string, weekday: Weekday | null) => void;
   toggleBusyWeek: (week: number) => void;
   saveCheckIn: (c: CheckIn) => void;
+  addWorkout: (w: Omit<CompletedWorkout, 'id'>) => void;
+  removeWorkout: (id: string) => void;
   addFood: (f: Omit<FoodEntry, 'id'>) => void;
   removeFood: (id: string) => void;
   addWater: (ml: number) => void;
@@ -112,6 +114,8 @@ export const useApp = create<AppState>()(
         set({ settings: { ...get().settings, busyWeeks: [...busy].sort((a, b) => a - b) } });
       },
       saveCheckIn: (c) => set({ checkIns: { ...get().checkIns, [c.date]: c } }),
+      addWorkout: (w) => set({ workouts: [...get().workouts, { ...w, id: `manual-${uid()}` }] }),
+      removeWorkout: (id) => set({ workouts: get().workouts.filter((w) => w.id !== id) }),
 
       addFood: (f) => {
         const entry = { ...f, id: uid() };
@@ -158,7 +162,8 @@ export const useApp = create<AppState>()(
           for (const d of days) daily[d.date] = { ...daily[d.date], ...d };
           // Keep manual / older entries that fell out of the query window.
           const fresh = new Set(workouts.map((w) => w.id));
-          const kept = get().workouts.filter((w) => !fresh.has(w.id) && w.start < new Date(Date.now() - 90 * 86_400_000).toISOString());
+          const cutoff = new Date(Date.now() - 90 * 86_400_000).toISOString();
+          const kept = get().workouts.filter((w) => !fresh.has(w.id) && (w.id.startsWith('manual-') || w.start < cutoff));
           set({ workouts: [...kept, ...workouts], daily, lastSync: new Date().toISOString() });
           return { ok: true, message: `Synced ${workouts.length} workouts and ${days.length} days of health data.` };
         } catch (e) {

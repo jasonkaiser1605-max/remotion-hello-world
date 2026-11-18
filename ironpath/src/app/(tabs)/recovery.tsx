@@ -6,7 +6,7 @@ import { Bars, Legend, Sparkline } from '@/components/charts';
 import { ReadinessCard } from '@/components/Readiness';
 import { Button, Card, H1, H2, Icon, Row, Screen, SportBadge, Stat, T } from '@/components/ui';
 import { useLoad, useReadiness, useToday } from '@/hooks/useDay';
-import { addDays, formatMinutes, localDateOf, prettyDate, WEEKDAY_SHORT, weekdayOf } from '@/lib/dates';
+import { addDays, formatDistance, formatMinutes, localDateOf, prettyDate, WEEKDAY_SHORT, weekdayOf } from '@/lib/dates';
 import { rampRate } from '@/lib/load';
 import { useApp } from '@/store';
 import { C } from '@/theme';
@@ -20,6 +20,7 @@ export default function RecoveryScreen() {
   const healthConnected = useApp((s) => s.healthConnected);
   const lastSync = useApp((s) => s.lastSync);
   const sync = useApp((s) => s.sync);
+  const imperial = useApp((s) => s.profile.units === 'imperial');
   const load = useLoad();
   const [syncing, setSyncing] = useState(false);
 
@@ -132,7 +133,7 @@ export default function RecoveryScreen() {
               <View style={{ flex: 1 }}>
                 <T small bold>
                   {prettyDate(localDateOf(w.start))} · {formatMinutes(w.minutes)}
-                  {w.distanceM ? ` · ${w.sport === 'swim' ? `${Math.round(w.distanceM)} m` : `${(w.distanceM / 1000).toFixed(1)} km`}` : ''}
+                  {w.distanceM ? ` · ${formatDistance(w.distanceM, w.sport, imperial)}` : ''}
                 </T>
                 <T small muted>
                   {w.avgHr ? `${w.avgHr} bpm avg` : 'no HR'}

@@ -22,6 +22,12 @@ import { C, R, SPORT } from '@/theme';
 
 export type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
+/** Show demo-data buttons only in development or when the URL contains ?demo. */
+export function demoAllowed(): boolean {
+  if (__DEV__) return true;
+  return Platform.OS === 'web' && typeof window !== 'undefined' && window.location.search.includes('demo');
+}
+
 export function tap() {
   if (Platform.OS === 'ios') void Haptics.selectionAsync();
 }

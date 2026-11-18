@@ -5,7 +5,7 @@ import { Platform, Pressable, View } from 'react-native';
 import { CaloriesCard, WaterCard } from '@/components/Fuel';
 import { ReadinessCard } from '@/components/Readiness';
 import { SessionCard } from '@/components/SessionCard';
-import { Button, Card, H1, H2, Icon, ProgressBar, Row, Screen, T } from '@/components/ui';
+import { Button, Card, demoAllowed, H1, H2, Icon, ProgressBar, Row, Screen, T } from '@/components/ui';
 import { useDayData, useReadiness, useToday } from '@/hooks/useDay';
 import { daysBetween, prettyDate } from '@/lib/dates';
 import { DAILY_TIPS } from '@/lib/knowledge';
@@ -157,7 +157,20 @@ export default function Today() {
         </Card>
       ) : null}
 
-      {!healthConnected && workoutsCount === 0 ? (
+      {!healthConnected && workoutsCount === 0 && Platform.OS === 'web' ? (
+        <Card accent={C.blue}>
+          <Row>
+            <Icon name="watch-variant" color={C.blue} />
+            <T bold>Using your Garmin or Apple Watch</T>
+          </Row>
+          <T small muted>
+            The website can’t read Apple Health, so after each workout tap it here and choose “Log what your watch
+            recorded” (minutes, distance, avg HR, calories, 10 seconds). Add your hours slept in the morning check-in.
+            Automatic sync comes with the installed iPhone app.
+          </T>
+          {demoAllowed() ? <Button title="Load demo data (preview)" kind="ghost" small onPress={loadDemo} /> : null}
+        </Card>
+      ) : !healthConnected && workoutsCount === 0 ? (
         <Card accent={C.blue}>
           <Row>
             <Icon name="watch-variant" color={C.blue} />
@@ -168,9 +181,6 @@ export default function Today() {
             syncs through Apple Health too.
           </T>
           <Button title="Set up in Settings" kind="secondary" onPress={() => router.push('/settings')} />
-          {Platform.OS !== 'ios' ? (
-            <Button title="Load demo data (preview)" kind="ghost" small onPress={loadDemo} />
-          ) : null}
         </Card>
       ) : healthConnected ? (
         <Row style={{ justifyContent: 'center' }}>

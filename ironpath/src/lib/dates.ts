@@ -85,3 +85,9 @@ export function formatPace(secPer100: number): string {
   const s = Math.round(secPer100 % 60);
   return `${m}:${String(s).padStart(2, '0')}`;
 }
+
+/** Swims in metres; rides and runs in miles (imperial) or km (metric). */
+export function formatDistance(metres: number, sport: string, imperial: boolean): string {
+  if (sport === 'swim') return `${Math.round(metres)} m`;
+  return imperial ? `${(metres / 1609.344).toFixed(1)} mi` : `${(metres / 1000).toFixed(1)} km`;
+}

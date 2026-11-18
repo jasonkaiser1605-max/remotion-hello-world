@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
 import { View } from 'react-native';
 
-import { formatMinutes } from '@/lib/dates';
+import { formatDistance, formatMinutes } from '@/lib/dates';
 import type { SessionStatus } from '@/lib/match';
 import type { CompletedWorkout, PlannedSession } from '@/lib/types';
+import { useApp } from '@/store';
 import { C, SPORT, ZONE_COLORS } from '@/theme';
 
 import { Card, Icon, Pill, Row, SportBadge, T } from './ui';
@@ -27,6 +28,7 @@ export function SessionCard({
   actual?: CompletedWorkout;
   compact?: boolean;
 }) {
+  const imperial = useApp((s) => s.profile.units === 'imperial');
   const st = STATUS[status];
   const color = SPORT[session.sport].color;
   return (
@@ -46,7 +48,7 @@ export function SessionCard({
           {actual ? (
             <T small color={C.green}>
               {formatMinutes(actual.minutes)}
-              {actual.distanceM ? ` · ${actual.sport === 'swim' ? `${Math.round(actual.distanceM)} m` : `${(actual.distanceM / 1000).toFixed(1)} km`}` : ''}
+              {actual.distanceM ? ` · ${formatDistance(actual.distanceM, actual.sport, imperial)}` : ''}
               {actual.avgHr ? ` · ${actual.avgHr} bpm` : ''}
               {actual.kcal ? ` · ${actual.kcal} kcal` : ''} · {actual.source}
             </T>

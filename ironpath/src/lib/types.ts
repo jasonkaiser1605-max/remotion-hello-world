@@ -162,6 +162,8 @@ export interface CheckIn {
   stress: number;
   /** 1 … 5 */
   motivation: number;
+  /** Hours slept, entered by hand when no watch sleep data is available. */
+  sleepHours?: number;
 }
 
 export interface FoodEntry {

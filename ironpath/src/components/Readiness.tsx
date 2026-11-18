@@ -6,7 +6,7 @@ import type { CheckIn } from '@/lib/types';
 import { useApp } from '@/store';
 import { C } from '@/theme';
 
-import { Button, Card, Icon, ProgressBar, Ring, Row, Segmented, T } from './ui';
+import { Button, Card, Icon, ProgressBar, Ring, Row, Segmented, Stepper, T } from './ui';
 
 export const LEVEL_COLOR = { green: C.green, yellow: C.yellow, red: C.red, unknown: C.faint };
 
@@ -76,8 +76,9 @@ const SCALE = [1, 2, 3, 4, 5].map((v) => ({ label: String(v), value: v }));
 export function CheckInForm({ date, onDone }: { date: string; onDone?: () => void }) {
   const existing = useApp((s) => s.checkIns[date]);
   const save = useApp((s) => s.saveCheckIn);
-  const [c, setC] = useState<CheckIn>(existing ?? { date, energy: 3, soreness: 2, stress: 2, motivation: 3 });
-  const row = (label: string, hint: string, key: keyof Omit<CheckIn, 'date'>) => (
+  const watchSleep = useApp((s) => s.daily[date]?.sleepHours);
+  const [c, setC] = useState<CheckIn>(existing ?? { date, energy: 3, soreness: 2, stress: 2, motivation: 3, sleepHours: 7.5 });
+  const row = (label: string, hint: string, key: 'energy' | 'soreness' | 'stress' | 'motivation') => (
     <View style={{ gap: 6 }}>
       <Row style={{ justifyContent: 'space-between' }}>
         <T small bold>
@@ -100,6 +101,21 @@ export function CheckInForm({ date, onDone }: { date: string; onDone?: () => voi
       {row('Muscle soreness', '1 none · 5 very sore', 'soreness')}
       {row('Life stress', '1 calm · 5 exams/work chaos', 'stress')}
       {row('Motivation', '1 none · 5 fired up', 'motivation')}
+      {watchSleep === undefined ? (
+        <Row style={{ justifyContent: 'space-between' }}>
+          <T small bold>
+            Hours slept
+          </T>
+          <Stepper
+            value={c.sleepHours ?? 7.5}
+            onChange={(v) => setC({ ...c, sleepHours: v })}
+            step={0.5}
+            min={0}
+            max={14}
+            format={(v) => `${v} h`}
+          />
+        </Row>
+      ) : null}
       <Button
         title={existing ? 'Update check-in' : 'Save check-in'}
         onPress={() => {

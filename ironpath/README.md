@@ -32,7 +32,25 @@ Apple Health is the hub:
 
 Why not Garmin's own API? Garmin's Health/Activity APIs are only for approved business partners, and they need a server. Apple Health is the supported, on-device route for a personal app. IronPath can also *write* the food and water you log back to Apple Health (toggle in Settings).
 
-## Install it on your iPhone
+## Use it on your iPhone today (website, free)
+
+The website version runs in Safari and installs on your home screen like an app. No Mac and no Apple developer account needed.
+
+**One-time setup (owner of the GitHub repo, 30 seconds):**
+GitHub → this repo → **Settings → Pages** → *Build and deployment*: Source **Deploy from a branch**, Branch **`claude/ironman-training-app-xauwlq`**, folder **`/docs`** → **Save**. After a minute or two the site is live at:
+
+**https://jasonkaiser1605-max.github.io/remotion-hello-world/**
+
+**Put it on your home screen:** open that link in **Safari** on your iPhone → tap **Share** → **Add to Home Screen** → **Add**. It opens full-screen with its own icon, and your data stays on your phone.
+
+What's different on the website:
+- **No automatic Garmin / Apple Watch sync.** Websites can't read Apple Health. After a workout, tap it in the app and choose **Log what your watch recorded** (minutes, distance, avg HR, calories), and add your hours slept in the morning check-in. Automatic sync needs the installed app (below).
+- Food photos work (tap **Take or choose photo**) with your Anthropic API key, stored only in that browser.
+- Data lives in the home-screen app's storage. If you delete the icon, the data goes with it.
+
+To update the website after changing code: `cd ironpath && npm run build:web`, then commit and push the `docs/` folder.
+
+## Install the native app (automatic Garmin + Apple Watch sync)
 
 Apple Health access needs a real native app build, so **Expo Go won't work**. Pick one option:
 
@@ -99,7 +117,8 @@ npm install
 npm test            # 46 unit tests: plan generator, zones, nutrition, readiness, load, matching
 npm run typecheck   # tsc --noEmit
 npm run lint        # expo lint
-npm run web         # browser preview (Apple Health unavailable; Settings → "Load demo data")
+npm run web         # browser preview (Apple Health unavailable; add ?demo to the URL for demo data)
+npm run build:web   # build the GitHub Pages website into ../docs
 ```
 
 ```

@@ -78,7 +78,9 @@ export function useReadiness(date: string) {
   const sleepGoalHours = useApp((s) => s.sleepGoalHours);
   const load = useLoad();
   return useMemo(() => {
-    const today = daily[date] ?? { date };
+    const check = checkIns[date];
+    const fromHealth = daily[date] ?? { date };
+    const today = { ...fromHealth, sleepHours: fromHealth.sleepHours ?? check?.sleepHours };
     const history = Object.values(daily).filter((d) => d.date < date && d.date >= addDays(date, -60));
     const point = load.find((p) => p.date === date);
     return computeReadiness({

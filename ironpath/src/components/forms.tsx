@@ -11,7 +11,7 @@ import { getApiKey, setApiKey } from '@/services/secrets';
 import { useApp } from '@/store';
 import { C } from '@/theme';
 
-import { Button, Card, Divider, Field, H2, Icon, Row, Segmented, SettingRow, Stepper, T } from './ui';
+import { Button, Card, demoAllowed, Divider, Field, H2, Icon, Row, Segmented, SettingRow, Stepper, T } from './ui';
 
 const LEVELS: { label: string; value: SkillLevel }[] = [
   { label: 'New', value: 'new' },
@@ -380,7 +380,9 @@ export function HealthSection() {
       ) : null}
       {!supported ? (
         <T small color={C.yellow}>
-          Apple Health works in the installed iPhone app (development or TestFlight build), not in Expo Go or this web preview.
+          {Platform.OS === 'web'
+            ? 'Websites can’t read Apple Health. On the website, log workouts by tapping them and entering your watch’s numbers. Automatic Garmin/Apple Watch sync needs the installed iPhone app (see the README).'
+            : 'Apple Health works in the installed iPhone app (development or TestFlight build), not in Expo Go.'}
         </T>
       ) : null}
       <SettingRow label="Save food & water to Apple Health">
@@ -433,7 +435,8 @@ export function ApiKeySection() {
       </Row>
       <T small muted>
         Snap a meal and Claude estimates calories and macros. It uses your own Anthropic API key (about 1–2¢ per photo). The
-        key is stored in the iPhone Keychain and is sent only to api.anthropic.com.
+        key is stored {Platform.OS === 'web' ? 'only in this browser on this phone' : 'in the iPhone Keychain'} and is sent only to
+        api.anthropic.com.
       </T>
       <Field label="Anthropic API key" value={key} onChangeText={setKeyText} placeholder={saved ? '•••••••• (saved)' : 'sk-ant-…'} secure />
       <Row>
@@ -505,8 +508,8 @@ export function DataSection() {
   const [confirm, setConfirm] = useState(false);
   return (
     <Card>
-      {Platform.OS !== 'ios' ? (
-        <Button kind="secondary" title="Load demo data (web preview)" icon="flask-outline" onPress={loadDemo} />
+      {demoAllowed() ? (
+        <Button kind="secondary" title="Load demo data (preview)" icon="flask-outline" onPress={loadDemo} />
       ) : null}
       {confirm ? (
         <Row>

@@ -1,12 +1,13 @@
 import { useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { View } from 'react-native';
 
-import { Button, Card, H1, H2, Icon, Pill, Row, Screen, SportBadge, Stat, T } from '@/components/ui';
+import { Button, Card, Field, H1, H2, Icon, Pill, Row, Screen, SportBadge, Stat, T } from '@/components/ui';
 import { useToday } from '@/hooks/useDay';
-import { formatMinutes, formatPace, prettyDate, WEEKDAY_SHORT } from '@/lib/dates';
+import { formatDistance, formatMinutes, formatPace, prettyDate, WEEKDAY_SHORT } from '@/lib/dates';
 import { sessionStatus } from '@/lib/match';
 import { fuelingDuring } from '@/lib/nutrition';
-import type { Weekday } from '@/lib/types';
+import type { PlannedSession, Weekday } from '@/lib/types';
 import { heartRateZones, powerZones, swimPaces } from '@/lib/zones';
 import { useApp, useMatches, usePlan } from '@/store';
 import { C, SPORT, ZONE_COLORS } from '@/theme';
@@ -21,6 +22,8 @@ export default function WorkoutDetail() {
   const markSession = useApp((s) => s.markSession);
   const moveSession = useApp((s) => s.moveSession);
   const moved = useApp((s) => (id ? s.moves[id] : undefined));
+  const removeWorkout = useApp((s) => s.removeWorkout);
+  const imperial = useApp((s) => s.profile.units === 'imperial');
   const today = useToday();
 
   const session = plan.flatMap((w) => w.sessions).find((s) => s.id === id);
@@ -136,8 +139,8 @@ export default function WorkoutDetail() {
               {actual.distanceM ? (
                 <Stat
                   label="Distance"
-                  value={actual.sport === 'swim' ? `${Math.round(actual.distanceM)}` : (actual.distanceM / 1000).toFixed(1)}
-                  unit={actual.sport === 'swim' ? 'm' : 'km'}
+                  value={formatDistance(actual.distanceM, actual.sport, imperial).split(' ')[0]}
+                  unit={formatDistance(actual.distanceM, actual.sport, imperial).split(' ')[1]}
                 />
               ) : null}
             </Row>
@@ -146,6 +149,9 @@ export default function WorkoutDetail() {
               {actual.maxHr ? <Stat label="Max HR" value={`${actual.maxHr}`} unit="bpm" /> : null}
               {actual.kcal ? <Stat label="Calories" value={`${actual.kcal}`} unit="kcal" /> : null}
             </Row>
+            {actual.id.startsWith('manual-') ? (
+              <Button small kind="ghost" icon="delete-outline" title="Delete this entry" onPress={() => removeWorkout(actual.id)} />
+            ) : null}
             {actual.avgHr && showZone ? (
               <T small muted>
                 {actual.avgHr > (z?.high ?? 999) + 5
@@ -157,11 +163,19 @@ export default function WorkoutDetail() {
         </>
       ) : null}
 
+      {!actual && session.sport !== 'race' && session.date <= today ? <LogWorkout session={session} /> : null}
+
       <H2>Update</H2>
       <Row>
-        {status === 'done' || status === 'skipped' ? (
-          <Button title="Undo" kind="secondary" icon="undo" onPress={() => markSession(session.id, null)} style={{ flex: 1 }} />
-        ) : (
+        {marks[session.id] ? (
+          <Button
+            title={marks[session.id].status === 'done' ? 'Undo “done”' : 'Undo skip'}
+            kind="secondary"
+            icon="undo"
+            onPress={() => markSession(session.id, null)}
+            style={{ flex: 1 }}
+          />
+        ) : actual ? null : (
           <>
             <Button title="Mark done" icon="check" onPress={() => markSession(session.id, 'done')} style={{ flex: 1 }} />
             <Button title="Skip" kind="secondary" icon="close" onPress={() => markSession(session.id, 'skipped')} style={{ flex: 1 }} />
@@ -193,5 +207,77 @@ export default function WorkoutDetail() {
         </Card>
       ) : null}
     </Screen>
+  );
+}
+
+/** Type in what your watch recorded (website version, or any workout Apple Health missed). */
+function LogWorkout({ session }: { session: PlannedSession }) {
+  const addWorkout = useApp((s) => s.addWorkout);
+  const imperial = useApp((s) => s.profile.units === 'imperial');
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ minutes: String(session.minutes), distance: '', hr: '', kcal: '' });
+  const num = (v: string) => {
+    const n = Number(v.replace(',', '.'));
+    return Number.isFinite(n) && n > 0 ? n : undefined;
+  };
+  const swim = session.sport === 'swim';
+  const distLabel = swim ? (imperial ? 'yards' : 'metres') : imperial ? 'miles' : 'km';
+  const toMetres = (d: number) => (swim ? (imperial ? d * 0.9144 : d) : imperial ? d * 1609.344 : d * 1000);
+  if (!open) {
+    return (
+      <Button
+        kind="secondary"
+        icon="watch"
+        title="Log what your watch recorded"
+        onPress={() => setOpen(true)}
+      />
+    );
+  }
+  return (
+    <Card>
+      <T small bold>
+        Log this workout
+      </T>
+      <T small muted>
+        Copy the numbers from your Garmin or Apple Watch summary. Heart rate and calories make your fuel targets and
+        training load more accurate.
+      </T>
+      <Row>
+        <View style={{ flex: 1 }}>
+          <Field label="Minutes" value={f.minutes} onChangeText={(minutes) => setF({ ...f, minutes })} keyboardType="numeric" />
+        </View>
+        {session.sport === 'swim' || session.sport === 'bike' || session.sport === 'run' ? (
+          <View style={{ flex: 1 }}>
+            <Field label={`Distance (${distLabel})`} value={f.distance} onChangeText={(distance) => setF({ ...f, distance })} keyboardType="decimal-pad" />
+          </View>
+        ) : null}
+      </Row>
+      <Row>
+        <View style={{ flex: 1 }}>
+          <Field label="Avg heart rate" value={f.hr} onChangeText={(hr) => setF({ ...f, hr })} keyboardType="numeric" />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Field label="Calories" value={f.kcal} onChangeText={(kcal) => setF({ ...f, kcal })} keyboardType="numeric" />
+        </View>
+      </Row>
+      <Button
+        title="Save workout"
+        icon="check"
+        disabled={!num(f.minutes)}
+        onPress={() => {
+          const d = num(f.distance);
+          addWorkout({
+            sport: session.sport,
+            start: `${session.date}T12:00:00`,
+            minutes: Math.round(num(f.minutes) ?? session.minutes),
+            distanceM: d ? Math.round(toMetres(d)) : undefined,
+            avgHr: num(f.hr) ? Math.round(num(f.hr)!) : undefined,
+            kcal: num(f.kcal) ? Math.round(num(f.kcal)!) : undefined,
+            source: 'Manual',
+          });
+          setOpen(false);
+        }}
+      />
+    </Card>
   );
 }

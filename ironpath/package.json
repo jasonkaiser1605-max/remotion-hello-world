@@ -46,7 +46,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "export:web": "expo export --platform web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:web": "node scripts/build-web.mjs"
   },
   "private": true
 }
