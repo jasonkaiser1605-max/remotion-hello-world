@@ -1,3 +1,5 @@
+> **🏊‍♂️🚴‍♂️🏃‍♂️ IronPath, the Ironman training app, lives in [`ironpath/`](ironpath/README.md).** The rest of this repo is the original Remotion template.
+
 # Remotion video
 
 <p align="center">

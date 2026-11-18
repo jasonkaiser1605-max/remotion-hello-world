@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "IronPath",
+    "slug": "ironpath",
+    "scheme": "ironpath",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ironpath.coach",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F14",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "IronPath reads your workouts, heart rate, HRV, sleep and calories (from Apple Watch, Garmin Connect, or any app that writes to Apple Health) to track your training and readiness.",
+          "NSHealthUpdateUsageDescription": "IronPath can save the food and water you log to Apple Health.",
+          "background": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "IronPath uses your photos so you can log meals from pictures you've already taken.",
+          "cameraPermission": "IronPath uses the camera so you can snap a photo of your meal to estimate calories and macros.",
+          "microphonePermission": false
+        }
+      ]
+    ]
+  }
+}
